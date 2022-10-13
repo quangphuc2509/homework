@@ -1,5 +1,8 @@
-BoardSize = 300; SquareNumber = 5; SquareSize = BoardSize/SquareNumber; 
-i = 0; j = 0;i1 = 1; j1 = 2;
+BoardSize = 300;
+SquareNumber = input('nhap so lieu ban co: '); 
+SquareSize = BoardSize/SquareNumber; 
+i = input('nhap hang X: '); j = input('nhap cot X: ');
+i1 = input('nhap hang O: '); j1 = input('nhap cot O: ');
 l01 = 100; l02 = 100;
 l2 = 300; l3 = 200; l4 = 150; r = BoardSize/(4*SquareNumber); l1 = 100;
 xij = (BoardSize/SquareNumber)*(j+0.5); yij = (BoardSize/SquareNumber)*(i+0.5);
@@ -110,4 +113,3 @@ for t = 0:0.01:2*pi
     grid on;
    
 end
- 
