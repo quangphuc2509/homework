@@ -1,0 +1,219 @@
+#include <AccelStepper.h>
+#include <MultiStepper.h>
+AccelStepper stepperX(1,2,5,8);
+AccelStepper stepperY(1,3,6,8);
+AccelStepper stepperZ(1,4,7,8);
+float theta_1,theta_2, Steps;
+int GOC_X,GOC_Y;
+float do_dai;
+int dong_co;
+float pi = 3.141592654102;
+float X_previous;
+float Y_previous;
+float X,Y,A,B;
+
+void setup() {
+  pinMode(2,OUTPUT);
+  pinMode(5,OUTPUT);
+  pinMode(3,OUTPUT);
+  pinMode(6,OUTPUT);
+  pinMode(4,OUTPUT);
+  pinMode(7,OUTPUT);
+  pinMode(8,OUTPUT);
+  digitalWrite(8,LOW);
+  Serial.begin(2000000);
+  // Step_X
+  stepperX.setMaxSpeed(1500);    // Set toc do toi da
+  stepperX.setSpeed(1500);        // Toc do set
+  stepperX.setAcceleration(500); // Set gia toc
+
+  // Step_Y
+  stepperY.setMaxSpeed(1500);    // Set toc do toi da
+  stepperY.setSpeed(1500);        // Toc do set
+  stepperY.setAcceleration(500); // Set gia toc
+
+  // Step_Z
+  stepperZ.setMaxSpeed(2000);    // Set toc do toi da
+  stepperZ.setSpeed(800);        // Toc do set
+  stepperZ.setAcceleration(400); // Set gia toc
+
+    stepperX.setCurrentPosition(0);                    //Set goc ve 0
+    stepperY.setCurrentPosition(0);
+    stepperZ.setCurrentPosition(0);
+
+}
+
+
+
+void Chay_XO(float Px, float Py)
+{
+
+  float c2,s2,t2,c1,s1,t1;
+  float l2 = 300; // Khau_2.1
+  float l3 = 200; // Khau_2.2
+  float l01 = 140;
+  float l02 = 190;
+  int a = 30;
+
+  A = Px + l01;
+  B = Py + l02;
+  c2 = (pow(A,2) + pow(B,2) - pow(l2,2) - pow(l3,2))/(2*l2*l3);
+  s2 = sqrt(abs(1 - pow(c2,2)));
+  t2 = atan2(s2,c2)*180/pi;
+  s1 = B*(l3*c2  + l2) - A*(l3*s2);
+  c1 = A*(l3*c2 + l2) + B*(l3*s2);
+  t1 = atan2(s1,c1)*180/pi;
+  Serial.println(t1);
+  Serial.println(t2);
+  
+  GOC_X = (t1)*5/9*16;        // Step_X chay voi do phan giai x8 
+  GOC_Y = (t2)*5/9*8*40/20;  // Step_Y chay voi do phan giai x8; ti so truyen 2
+  do_dai = a*200*2/8;
+  
+  stepperX.moveTo(GOC_X);
+  stepperY.moveTo(GOC_Y);
+        
+    Serial.print("Toc_do_1: ");
+    Serial.println(stepperX.speed());
+
+    Serial.print("Toc_do_2: ");
+    Serial.println(stepperY.speed());
+
+    Serial.print("Toc_do_3: ");
+    Serial.println(stepperZ.speed());
+    
+  while(stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0/* && stepperZ.currentPosition()!=Steps*/)           // Quay cho den khi no quay ve gia tri set
+    {
+      stepperX.run();
+      delayMicroseconds(1000);  
+      stepperY.run(); // Lenh chay co gia toc
+     delayMicroseconds(1000); 
+//      stepperZ.run();
+//      delayMicroseconds(10); 
+    }
+  
+  
+}
+
+void loop() {
+
+delay(3000);
+float R = 20;                          // Khai bao ban kinh duong tron
+int xA = 150,  yA = 150;             // Khai bao vi tri muon danh 
+
+    
+      X = xA;                                           // Phuong trinh duong tron voi vi tri x = xA; y = yA; ban kinh = R
+      Y = yA; 
+      Chay_XO(X,Y);
+
+    stepperZ.moveTo(-do_dai);
+    while(stepperZ.distanceToGo() != 0 )
+    {
+      stepperZ.run();
+    }
+      
+    
+
+    
+    for (float t = 0; t <= pi/2; t+=0.03)                          // Lenh ve O
+    { 
+        // Step_X
+    stepperX.setMaxSpeed(1500);    // Set toc do toi da
+    stepperX.setSpeed(500);        // Toc do set
+    stepperX.setAcceleration(300); // Set gia toc
+
+      // Step_Y
+      stepperY.setMaxSpeed(1500);    // Set toc do toi da
+      stepperY.setSpeed(700);        // Toc do set
+      stepperY.setAcceleration(300); // Set gia toc
+       
+      X = xA + R*cos(t);                                          // Phuong trinh duong tron voi vi tri x = xA; y = yA; ban kinh = R
+      Y = yA + R*sin(t);
+      Chay_XO(X,Y);
+      delay(10);
+      Serial.println(t);
+
+
+    }
+
+    for (float t = pi/2; t <= pi; t+=0.03)                          // Lenh ve O
+    { 
+        // Step_X
+    stepperX.setMaxSpeed(1500);    // Set toc do toi da
+    stepperX.setSpeed(500);        // Toc do set
+    stepperX.setAcceleration(300); // Set gia toc
+
+  // Step_Y
+      stepperY.setMaxSpeed(1500);    // Set toc do toi da
+      stepperY.setSpeed(700);        // Toc do set
+      stepperY.setAcceleration(300); // Set gia toc
+      
+
+      X = xA + R*cos(t);                                          // Phuong trinh duong tron voi vi tri x = xA; y = yA; ban kinh = R
+      Y = yA + R*sin(t);
+      Chay_XO(X,Y);
+      delay(10);
+      Serial.println(t);
+
+
+    }
+
+    for (float t = pi; t <= 3*pi/2; t+=0.03)                          // Lenh ve O
+    { 
+        // Step_X
+    stepperX.setMaxSpeed(1500);    // Set toc do toi da
+    stepperX.setSpeed(500);        // Toc do set
+    stepperX.setAcceleration(300); // Set gia toc
+
+  // Step_Y
+      stepperY.setMaxSpeed(1500);    // Set toc do toi da
+      stepperY.setSpeed(700);        // Toc do set
+      stepperY.setAcceleration(300); // Set gia toc
+      
+
+      X = xA + R*cos(t);                                          // Phuong trinh duong tron voi vi tri x = xA; y = yA; ban kinh = R
+      Y = yA + R*sin(t);
+      Chay_XO(X,Y);
+      delay(10);
+      Serial.println(t);
+
+    }
+    
+    for (float t = 3*pi/2; t <= 2.5*pi; t+=0.03)                          // Lenh ve O
+    { 
+        // Step_X
+    stepperX.setMaxSpeed(1000);    // Set toc do toi da
+    stepperX.setSpeed(500);        // Toc do set
+    stepperX.setAcceleration(300); // Set gia toc
+
+  // Step_Y
+      stepperY.setMaxSpeed(1000);    // Set toc do toi da
+      stepperY.setSpeed(700);        // Toc do set
+      stepperY.setAcceleration(300); // Set gia toc
+      
+
+      X = xA + R*cos(t);                                          // Phuong trinh duong tron voi vi tri x = xA; y = yA; ban kinh = R
+      Y = yA + R*sin(t);
+      Chay_XO(X,Y);
+      delay(10);
+      Serial.println(t);
+    }
+    
+    stepperZ.moveTo(do_dai);
+    while(stepperZ.distanceToGo() != 0 )
+    {
+      stepperZ.run();
+    }
+    
+    stepperX.moveTo(0);
+    stepperY.moveTo(0);
+    while(stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+    {
+      stepperX.run();
+      stepperY.run();
+    }
+
+
+    
+    
+}
